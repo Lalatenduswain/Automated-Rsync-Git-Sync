@@ -1,166 +1,115 @@
-# Automated Rsync and Git Sync Script for Validex Project
+# Automated Rsync and Git Commit Script
 
-**Author:** Lalatendu Swain | [GitHub](https://github.com/Lalatenduswain)
+## Overview
 
-## Introduction
+This repository contains a Bash script designed to automate the process of syncing files from a remote server to a local directory using `rsync`, and then committing and pushing any changes to a Git repository. This can be particularly useful for maintaining backups or ensuring that changes in a remote directory are versioned and tracked in a local Git repository.
 
-This repository contains a Bash script named `automated_rsync_git_sync.sh` that automates the process of syncing a remote directory to a local directory, committing any changes, and pushing these changes to a Git repository. This is particularly useful for developers and system administrators who want to ensure continuous updates between a server and a local backup.
+**GitHub Username:** [Lalatendu Swain](https://github.com/Lalatenduswain)  
+**Git Repository URL:** [https://github.com/Lalatenduswain/Automated-Rsync-Git-Sync](https://github.com/Lalatenduswain/Automated-Rsync-Git-Sync)
 
 ## Prerequisites
 
-Before using this script, make sure to have the following:
+Before running this script, ensure the following requirements are met:
 
-- **Git** installed on the local machine. [Installation Guide](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git)
-- **Rsync** installed on the local machine. Install via:
-  ```bash
-  sudo apt-get install rsync
-  ```
-- **SSH** access configured between the local machine and the remote server. Ensure key-based authentication is set up for seamless operation.
-- **Git repository access** with write permissions.
-- **Sudo permissions** if you are running the script in directories that require elevated privileges.
+- **SSH Key Authentication**: Set up SSH key-based authentication between your local machine and the remote server.
+- **Installed Packages**:
+  - `rsync`
+  - `git`
+  - `ssh`
+- **Permissions**:
+  - Ensure that the script has executable permissions: `chmod +x sync_rsync_git.sh`.
+  - You may need `sudo` privileges for installing required packages or accessing certain directories.
 
 ## Script Overview
 
-The script performs the following main tasks:
-
-1. Establishes an SSH connection to verify remote server availability.
-2. Uses `rsync` to synchronize the contents of the specified remote directory to the local backup directory, excluding defined paths.
-3. Initializes a Git repository in the local directory (if not already initialized).
-4. Ensures the main branch is checked out.
-5. Stages any changes, commits them with a timestamped message, and pushes them to a remote repository.
-6. Logs all operations and outputs errors for troubleshooting.
-
-## Script Details
-
 ### Script Name
+`sync_rsync_git.sh`
 
-`automated_rsync_git_sync.sh`
+### Purpose
+This script performs the following functions:
+1. Verifies an SSH connection to the remote server.
+2. Uses `rsync` to sync files from the remote directory to the local directory with specific exclusions.
+3. Initializes a Git repository if one doesn't exist.
+4. Stages, commits, and pushes changes to a specified remote Git repository.
 
-### Script Logic Explained
+### Script Details
+The script includes robust error handling and logging to a log file located at `/var/log/rsync_git_sync.log` for tracking activities and potential issues.
 
-1. **Log function**: Captures messages and outputs them to a log file.
-2. **SSH Check**: Verifies if the remote server is reachable.
-3. **Rsync Operation**: Syncs the remote directory with the local one while excluding certain subdirectories.
-4. **Git Initialization**: Ensures a Git repository is present.
-5. **Git Operations**:
-   - Checks out the `main` branch.
-   - Stages changes, commits them, and pushes to the remote repository.
-   - Handles error checking at each step to log issues.
+### Script Logic
+1. **SSH Connection Check**: Verifies that the remote server is accessible via SSH.
+2. **Rsync Operation**: Synchronizes the remote directory to the local path with exclusions.
+3. **Git Initialization**:
+   - Checks if a Git repository is already initialized.
+   - If not, initializes a new Git repository and sets the remote origin.
+4. **Branch Checkout**: Ensures the `main` branch is active.
+5. **Commit and Push**:
+   - Adds and commits changes if detected.
+   - Pushes changes to the remote repository.
 
-### How to Run the Script
+## Script Usage
 
-1. Clone the repository:
+### Step-by-Step Instructions
+1. **Clone the Repository**:
    ```bash
-   git clone https://github.com/Lalatenduswain/automated_rsync_git_sync.sh
+   git clone https://github.com/Lalatenduswain/Automated-Rsync-Git-Sync.git
+   cd Automated-Rsync-Git-Sync
    ```
 
-2. Navigate to the script directory:
+2. **Ensure Prerequisites are Installed**:
+   Install required packages if they are not already available:
    ```bash
-   cd automated_rsync_git_sync.sh
+   sudo apt update
+   sudo apt install rsync git ssh -y
    ```
 
-3. Make the script executable:
+3. **Configure SSH**:
+   Ensure SSH key-based authentication is set up for seamless access to the remote server.
+
+4. **Run the Script**:
+   Make the script executable:
    ```bash
-   chmod +x automated_rsync_git_sync.sh
+   chmod +x sync_rsync_git.sh
    ```
 
-4. Run the script:
+   Run the script:
    ```bash
-   ./automated_rsync_git_sync.sh
+   ./sync_rsync_git.sh
    ```
 
-### Script Code
+5. **Verify Logs**:
+   Check `/var/log/rsync_git_sync.log` for detailed output and potential errors.
 
-```bash
-#!/bin/bash
+## Script Explanation
 
-# Variables for paths and Git details
-REMOTE_ALIAS="remote-server"
-REMOTE_DIR="/path/to/remote/dir"
-LOCAL_DIR="/path/to/local/dir"
-EXCLUDES=("--exclude=some/path/" "--exclude=another/path/")
-GIT_REPO_URL="git@github.com:your-username/your-repo.git"
-LOG_FILE="/path/to/log/file.log"
-DATE=$(date +"%Y-%m-%d %H:%M:%S")
+### Variables
+- `REMOTE_ALIAS`: SSH alias for the remote server.
+- `REMOTE_DIR`: Directory path on the remote server to sync from.
+- `LOCAL_DIR`: Local directory path for syncing files.
+- `EXCLUDES`: Array of paths to exclude during the `rsync` operation.
+- `GIT_REPO_URL`: URL of the remote Git repository.
+- `LOG_FILE`: Path for storing log output.
+- `DATE`: Timestamp for log entries.
 
-# Function to log messages
-log_message() {
-    echo "[$DATE] $1" >> $LOG_FILE
-}
+### Key Functions
+- **log_message**: Logs messages to the specified log file with timestamps.
+- **SSH Connection Check**: Ensures that the remote server is accessible.
+- **Rsync Operation**: Synchronizes files with the specified exclusions and logs output.
+- **Git Initialization and Branch Management**: Checks and manages the Git repository state, switching to the `main` branch if needed.
+- **Commit and Push Logic**: Detects changes, commits, and pushes updates to the remote repository.
 
-# Ensure SSH connection is available
-if ! ssh -q "$REMOTE_ALIAS" exit; then
-    log_message "ERROR: SSH connection to $REMOTE_ALIAS failed."
-    exit 1
-fi
+## Disclaimer | Running the Script
 
-# Perform rsync with error handling
-log_message "Starting rsync from $REMOTE_ALIAS:$REMOTE_DIR to $LOCAL_DIR"
-rsync -avz "${EXCLUDES[@]}" "$REMOTE_ALIAS:$REMOTE_DIR" "$LOCAL_DIR" >> $LOG_FILE 2>&1
-if [[ $? -ne 0 ]]; then
-    log_message "ERROR: Rsync failed. Check details above."
-    exit 1
-fi
-log_message "Rsync completed successfully."
-
-# Navigate to the local directory and initialize Git if needed
-cd "$LOCAL_DIR" || { log_message "ERROR: Failed to navigate to $LOCAL_DIR"; exit 1; }
-
-if [ ! -d ".git" ]; then
-    log_message "Initializing new Git repository."
-    git init >> $LOG_FILE 2>&1
-    git remote add origin "$GIT_REPO_URL" >> $LOG_FILE 2>&1
-fi
-
-# Ensure main branch is checked out
-log_message "Switching to main branch."
-git checkout main >> $LOG_FILE 2>&1
-if [[ $? -ne 0 ]]; then
-    log_message "ERROR: Failed to switch to main branch. Check if branch exists."
-    exit 1
-fi
-
-# Stage, commit, and push changes
-log_message "Staging changes for commit."
-git add . >> $LOG_FILE 2>&1
-
-CHANGES=$(git status --porcelain)
-if [ -n "$CHANGES" ]; then
-    log_message "Committing changes."
-    git commit -m "Automated sync and commit: $DATE" >> $LOG_FILE 2>&1
-    if [[ $? -ne 0 ]]; then
-        log_message "ERROR: Git commit failed."
-        exit 1
-    fi
-
-    log_message "Pushing changes to remote."
-    git push origin main >> $LOG_FILE 2>&1
-    if [[ $? -ne 0 ]]; then
-        log_message "ERROR: Git push failed. Check for conflicts or authentication issues."
-        exit 1
-    fi
-    log_message "Changes pushed successfully."
-else
-    log_message "No changes detected. Nothing to commit."
-fi
-
-log_message "Script completed successfully."
-
-exit 0
-```
-
-## Running the Script Safely
-
-### Disclaimer
-
-**Author:** Lalatendu Swain | [GitHub](https://github.com/Lalatenduswain) | [Website](https://blog.lalatendu.info/)
+**Author**: Lalatendu Swain | [GitHub](https://github.com/Lalatenduswain) | [Website](https://blog.lalatendu.info/)
 
 This script is provided as-is and may require modifications or updates based on your specific environment and requirements. Use it at your own risk. The authors of the script are not liable for any damages or issues caused by its usage.
 
-### Donations
+## Donations
 
 If you find this script useful and want to show your appreciation, you can donate via [Buy Me a Coffee](https://www.buymeacoffee.com/lalatendu.swain).
 
 ## Support or Contact
+Encountering issues? Don't hesitate to submit an issue on our [GitHub page](https://github.com/Lalatenduswain/Automated-Rsync-Git-Sync/issues).
 
-Encountering issues? Don't hesitate to submit an issue on our [GitHub page](https://github.com/Lalatenduswain/automated_rsync_git_sync.sh/issues).
+---
+
+Feel free to contribute, raise issues, or suggest improvements to the script. Your feedback is always appreciated!
